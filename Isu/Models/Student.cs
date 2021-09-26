@@ -1,6 +1,4 @@
-﻿using Isu.Tools;
-
-namespace Isu.Models
+﻿namespace Isu.Models
 {
     public class Student
     {
