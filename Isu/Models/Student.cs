@@ -29,11 +29,5 @@ namespace Isu.Models
         {
             return _group;
         }
-
-        public void ChangeGroup(Group newGroup)
-        {
-            if (_group.GetName() == newGroup.GetName()) throw new IsuException("Attempt to transfer student to the same group");
-            _group = newGroup;
-        }
     }
 }

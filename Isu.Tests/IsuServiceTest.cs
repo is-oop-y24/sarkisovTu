@@ -47,16 +47,5 @@ namespace Isu.Tests
                 _isuService.AddGroup("13201");
             });
         }
-
-        [Test]
-        public void TransferStudentToAnotherGroup_GroupChanged()
-        {
-            Group m3101 = _isuService.AddGroup("M3101");
-            Student student1 = _isuService.AddStudent(m3101, "Name surname");
-            Assert.Catch<IsuException>(() =>
-            {
-                student1.ChangeGroup(m3101);
-            });
-        }
     }
 }

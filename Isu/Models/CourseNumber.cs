@@ -1,10 +1,10 @@
 ﻿namespace Isu.Models
 {
-    public class CourseNumber : CustomValueType<int>
+    public enum CourseNumber
     {
-        private CourseNumber(int value)
-            : base(value) { }
-        public static implicit operator CourseNumber(int value) { return new CourseNumber(value); }
-        public static implicit operator long(CourseNumber custom) { return custom.GetValue(); }
+        First = 1,
+        Second = 2,
+        Third = 3,
+        Fourth = 4,
     }
 }

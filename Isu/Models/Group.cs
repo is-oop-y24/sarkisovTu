@@ -1,30 +1,39 @@
-﻿namespace Isu.Models
-{
-    public class Group
-    {
-        private const int MaxStudentNumber = 35;
-        private readonly string _name;
-        private int _currentStudentNumber;
+﻿using System;
+#pragma warning disable 659
 
-        public Group(string name)
+namespace Isu.Models
+{
+    public class Group : IEquatable<Group>
+    {
+        private readonly string _name;
+        private readonly int _maxStudentNumber;
+
+        public Group(string name, int maxStudentNumber)
         {
             _name = name;
-            _currentStudentNumber = 0;
-        }
-
-        public bool HasFreePlaces()
-        {
-            return _currentStudentNumber < MaxStudentNumber;
-        }
-
-        public void TakeStudentPlace()
-        {
-            _currentStudentNumber++;
+            _maxStudentNumber = maxStudentNumber;
         }
 
         public string GetName()
         {
             return _name;
+        }
+
+        public int GetMaxStudentNumber()
+        {
+            return _maxStudentNumber;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other);
+        }
+
+        public bool Equals(Group other)
+        {
+            if (other == null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return false;
         }
     }
 }
