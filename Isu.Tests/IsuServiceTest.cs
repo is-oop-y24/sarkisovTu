@@ -47,5 +47,12 @@ namespace Isu.Tests
                 _isuService.AddGroup("13201");
             });
         }
+        
+        [Test]
+        public void CompareGroupsByReference_GroupsAreEqual()
+        {
+            Group group = _isuService.AddGroup("M3208");
+            Assert.True(group.Equals(_isuService.FindGroup("M3208")));
+        }
     }
 }

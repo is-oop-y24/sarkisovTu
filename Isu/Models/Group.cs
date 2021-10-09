@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Text.RegularExpressions;
+using Isu.Tools;
+
 #pragma warning disable 659
 
 namespace Isu.Models
@@ -10,18 +13,19 @@ namespace Isu.Models
 
         public Group(string name, int maxStudentNumber)
         {
+            if (!ValidateName(name)) throw new IsuException($"{name} is invalid group name");
             _name = name;
             _maxStudentNumber = maxStudentNumber;
         }
 
-        public string GetName()
+        public string Name
         {
-            return _name;
+            get { return _name; }
         }
 
-        public int GetMaxStudentNumber()
+        public int MaxStudentNumber
         {
-            return _maxStudentNumber;
+            get { return _maxStudentNumber; }
         }
 
         public override bool Equals(object other)
@@ -34,6 +38,12 @@ namespace Isu.Models
             if (other == null) return false;
             if (ReferenceEquals(this, other)) return true;
             return false;
+        }
+
+        private bool ValidateName(string groupName)
+        {
+            const string regexGroupPattern = @"^[a-zA-Z]{1}[3]{1}\d{3}$";
+            return Regex.IsMatch(groupName, regexGroupPattern);
         }
     }
 }

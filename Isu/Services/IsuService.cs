@@ -21,12 +21,10 @@ namespace Isu.Services
 
         public Group AddGroup(string name)
         {
-            const string regexGroupPattern = @"^[mM]{1}[3]{1}\d{3}$";
-            if (!Regex.IsMatch(name, regexGroupPattern)) throw new IsuException($"{name} is invalid group name");
             name = char.ToUpper(name[0]) + name.Substring(1);
             _groupsList.ForEach(group =>
             {
-                if (group.GetName() == name) throw new IsuException($"{name} group is already exist");
+                if (group.Name == name) throw new IsuException($"{name} group is already exist");
             });
             var newGroup = new Group(name, MaxStudentNumberInGroup);
             _groupsList.Add(newGroup);
@@ -37,103 +35,60 @@ namespace Isu.Services
         {
             if (!HasGroupFreePlaces(group)) throw new IsuException("Group hasn't empty places");
             int studentId = GenerateStudentId();
-            var newStudent = new Student(group, name, studentId);
+            var newStudent = new Student(studentId, name, group);
             _studentsList.Add(newStudent);
             return newStudent;
         }
 
         public Student GetStudent(int id)
         {
-            Student queryStudent = null;
             const string regexIdPattern = @"^\d{6}$";
             if (!Regex.IsMatch(id.ToString(), regexIdPattern)) throw new IsuException($"{id} is invalid student id");
-            _studentsList.ForEach(student =>
-            {
-                if (student.GetStudentId() == id)
-                {
-                    queryStudent = student;
-                }
-            });
+            Student queryStudent = _studentsList.Find(student => student.Id == id);
             return queryStudent;
         }
 
         public Student FindStudent(string name)
         {
-            Student queryStudent = null;
-            _studentsList.ForEach(student =>
-            {
-                if (student.GetStudentName() == name)
-                {
-                    queryStudent = student;
-                }
-            });
+            Student queryStudent = _studentsList.Find(student => student.Name == name);
             return queryStudent;
         }
 
         public List<Student> FindStudents(string groupName)
         {
-            const string regexGroupPattern = @"^[mM]{1}[3]{1}\d{3}$";
-            if (!Regex.IsMatch(groupName, regexGroupPattern)) throw new IsuException($"{groupName} is invalid group name");
-
-            var queryStudent = new List<Student>();
-            _studentsList.ForEach(student =>
-            {
-                if (student.GetStudentGroup().GetName() == groupName)
-                {
-                    queryStudent.Add(student);
-                }
-            });
+            groupName = char.ToUpper(groupName[0]) + groupName.Substring(1);
+            var queryStudent = _studentsList.Where(student => student.Group.Name == groupName).ToList();
             return queryStudent;
         }
 
         public List<Student> FindStudents(CourseNumber courseNumber)
         {
-            var queryStudents = new List<Student>();
-            _studentsList.ForEach(student =>
-            {
-                if (student.GetStudentGroup().GetName()[2] - '0' == (int)courseNumber)
-                {
-                    queryStudents.Add(student);
-                }
-            });
-            return queryStudents;
+            var queryStudent = _studentsList.Where(student => student.Group.Name[2] - '0' == (int)courseNumber).ToList();
+            return queryStudent;
         }
 
         public Group FindGroup(string groupName)
         {
-            Group queryGroup = null;
-            _groupsList.ForEach(group =>
-            {
-                if (group.GetName() == groupName)
-                {
-                    queryGroup = group;
-                }
-            });
+            groupName = char.ToUpper(groupName[0]) + groupName.Substring(1);
+            Group queryGroup = _groupsList.Find(group => group.Name == groupName);
             return queryGroup;
         }
 
         public List<Group> FindGroups(CourseNumber courseNumber)
         {
-            var queryGroups = new List<Group>();
-            _groupsList.ForEach(group =>
-            {
-                if (group.GetName().ToString()[2] - '0' == (int)courseNumber)
-                {
-                    queryGroups.Add(group);
-                }
-            });
+            var queryGroups = _groupsList.Where(group => group.Name.ToString()[2] - '0' == (int)courseNumber).ToList();
             return queryGroups;
         }
 
         public void ChangeStudentGroup(Student student, Group newGroup)
         {
-            if (student.GetStudentGroup().Equals(newGroup)) return;
+            if (student.Group.Equals(newGroup)) return;
             if (!HasGroupFreePlaces(newGroup)) throw new IsuException("Group hasn't empty places");
-            int studentId = student.GetStudentId();
-            string studentName = student.GetStudentName();
-            Student studentToRemove = _studentsList.Single(element => element.GetStudentId() == student.GetStudentId());
+            int studentId = student.Id;
+            string studentName = student.Name;
+            Student studentToRemove = _studentsList.Single(element => element.Id == student.Id);
             _studentsList.Remove(studentToRemove);
-            _studentsList.Add(new Student(newGroup, studentName, studentId));
+            _studentsList.Add(new Student(studentId, studentName, newGroup));
         }
 
         private int GenerateStudentId()
@@ -147,12 +102,12 @@ namespace Isu.Services
             int studentNumberInNewGroup = 0;
             _studentsList.ForEach(student =>
             {
-                if (student.GetStudentGroup().Equals(queryGroup))
+                if (student.Group.Equals(queryGroup))
                 {
                     studentNumberInNewGroup++;
                 }
             });
-            return studentNumberInNewGroup < queryGroup.GetMaxStudentNumber();
+            return studentNumberInNewGroup < queryGroup.MaxStudentNumber;
         }
     }
 }

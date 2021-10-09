@@ -6,26 +6,26 @@
         private readonly string _name;
         private Group _group;
 
-        public Student(Group group, string name, int id)
+        public Student(int id, string name, Group group)
         {
             _id = id;
             _name = name;
             _group = group;
         }
 
-        public int GetStudentId()
+        public int Id
         {
-            return _id;
+            get { return _id; }
         }
 
-        public string GetStudentName()
+        public string Name
         {
-            return _name;
+            get { return _name; }
         }
 
-        public Group GetStudentGroup()
+        public Group Group
         {
-            return _group;
+            get { return _group; }
         }
     }
 }
