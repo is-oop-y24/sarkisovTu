@@ -42,8 +42,7 @@ namespace Isu.Services
 
         public Student GetStudent(int id)
         {
-            const string regexIdPattern = @"^\d{6}$";
-            if (!Regex.IsMatch(id.ToString(), regexIdPattern)) throw new IsuException($"{id} is invalid student id");
+            if (!IsValidId(id)) throw new IsuException($"{id} is invalid student id");
             Student queryStudent = _studentsList.Find(student => student.Id == id);
             return queryStudent;
         }
@@ -99,15 +98,14 @@ namespace Isu.Services
 
         private bool HasGroupFreePlaces(Group queryGroup)
         {
-            int studentNumberInNewGroup = 0;
-            _studentsList.ForEach(student =>
-            {
-                if (student.Group.Equals(queryGroup))
-                {
-                    studentNumberInNewGroup++;
-                }
-            });
+            int studentNumberInNewGroup = _studentsList.Count(student => student.Group.Equals(queryGroup));
             return studentNumberInNewGroup < queryGroup.MaxStudentNumber;
+        }
+
+        private bool IsValidId(int id)
+        {
+            const string regexIdPattern = @"^\d{6}$";
+            return Regex.IsMatch(id.ToString(), regexIdPattern);
         }
     }
 }
