@@ -22,10 +22,7 @@ namespace Isu.Services
         public Group AddGroup(string name)
         {
             name = char.ToUpper(name[0]) + name.Substring(1);
-            _groupsList.ForEach(group =>
-            {
-                if (group.Name == name) throw new IsuException($"{name} group is already exist");
-            });
+            if (_groupsList.Any(group => group.Name == name)) throw new IsuException($"{name} group is already exist");
             var newGroup = new Group(name, MaxStudentNumberInGroup);
             _groupsList.Add(newGroup);
             return newGroup;
