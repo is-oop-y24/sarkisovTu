@@ -20,14 +20,14 @@ namespace Shops.Models
             }
         }
 
-        public string GetOperationType()
+        public string OperationType
         {
-            return _operationType;
+            get { return _operationType; }
         }
 
-        public double GetAmount()
+        public double Amount
         {
-            return _amount;
+            get { return _amount; }
         }
     }
 }

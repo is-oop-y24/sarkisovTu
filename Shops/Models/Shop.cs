@@ -22,15 +22,11 @@ namespace Shops.Models
         public void AddProduct(Product product, int amount, double price)
         {
             var newShopProduct = new ProductConfiguration(product, amount, price);
-
-            foreach (ProductConfiguration productConfiguration in _productStock)
+            ProductConfiguration queryConfiguration = _productStock.Find(config => config.ProductRef.Equals(product));
+            if (queryConfiguration != null)
             {
-                if (productConfiguration.GetProductRef().Equals(product))
-                {
-                    newShopProduct = new ProductConfiguration(product, productConfiguration.GetProductAmount() + amount, price);
-                    _productStock.Remove(productConfiguration);
-                    break;
-                }
+                newShopProduct = new ProductConfiguration(product, queryConfiguration.ProductAmount + amount, price);
+                _productStock.Remove(queryConfiguration);
             }
 
             _productStock.Add(newShopProduct);
@@ -38,18 +34,15 @@ namespace Shops.Models
 
         public void ChangeProductPrice(Product product, double newPrice)
         {
-            foreach (ProductConfiguration productConfiguration in _productStock)
+            ProductConfiguration queryConfiguration = _productStock.Find(config => config.ProductRef.Equals(product));
+            if (queryConfiguration != null)
             {
-                if (productConfiguration.GetProductRef().Equals(product))
-                {
-                    var newShopProduct = new ProductConfiguration(
-                        productConfiguration.GetProductRef(),
-                        productConfiguration.GetProductAmount(),
-                        newPrice);
-                    _productStock.Remove(productConfiguration);
-                    _productStock.Add(newShopProduct);
-                    break;
-                }
+                var newShopProduct = new ProductConfiguration(
+                    queryConfiguration.ProductRef,
+                    queryConfiguration.ProductAmount,
+                    newPrice);
+                _productStock.Remove(queryConfiguration);
+                _productStock.Add(newShopProduct);
             }
         }
 
@@ -59,10 +52,10 @@ namespace Shops.Models
             foreach (ProductConfiguration requestProduct in productWishList)
             {
                 ProductConfiguration shopProduct = _productStock.Find(product =>
-                    product.GetProductRef().Equals(requestProduct.GetProductRef()));
-                if (shopProduct != null && shopProduct.GetProductAmount() >= requestProduct.GetProductAmount())
+                    product.ProductRef.Equals(requestProduct.ProductRef));
+                if (shopProduct != null && shopProduct.ProductAmount >= requestProduct.ProductAmount)
                 {
-                    checkOffer += shopProduct.GetProductPrice() * requestProduct.GetProductAmount();
+                    checkOffer += shopProduct.ProductPrice * requestProduct.ProductAmount;
                 }
                 else
                 {
@@ -73,21 +66,21 @@ namespace Shops.Models
 
             if ((int)checkOffer == -1)
                 throw new ShopsException("Wishlist contains products which are out of stock");
-            if (checkOffer >= person.GetBalance())
-                throw new ShopsException($"Customer's balance:{person.GetBalance()} is less then total check:{checkOffer}");
+            if (checkOffer >= person.Balance)
+                throw new ShopsException($"Customer's balance:{person.Balance} is less then total check:{checkOffer}");
 
             MoneyService.ShopTransaction(person, this, checkOffer);
 
             foreach (ProductConfiguration requestProduct in productWishList)
             {
                 ProductConfiguration shopProduct = _productStock.Find(product =>
-                    product.GetProductRef().Equals(requestProduct.GetProductRef()));
+                    product.ProductRef.Equals(requestProduct.ProductRef));
                 if (shopProduct != null)
                 {
                     var newShopProduct = new ProductConfiguration(
-                        shopProduct.GetProductRef(),
-                        shopProduct.GetProductAmount() - requestProduct.GetProductAmount(),
-                        shopProduct.GetProductPrice());
+                        shopProduct.ProductRef,
+                        shopProduct.ProductAmount - requestProduct.ProductAmount,
+                        shopProduct.ProductPrice);
                     _productStock.Remove(shopProduct);
                     _productStock.Add(newShopProduct);
                 }
@@ -101,12 +94,8 @@ namespace Shops.Models
 
         public ProductConfiguration GetProductInfo(Product productToFind)
         {
-            foreach (ProductConfiguration product in _productStock)
-            {
-                if (product.GetProductRef().Equals(productToFind)) return product;
-            }
-
-            return null;
+            ProductConfiguration queryConfiguration = _productStock.Find(config => config.ProductRef.Equals(productToFind));
+            return queryConfiguration;
         }
 
         public void AddTransaction(Transaction transaction)

@@ -14,11 +14,6 @@ namespace Shops.Models
             _name = name;
         }
 
-        public string GetName()
-        {
-            return _name;
-        }
-
         public override bool Equals(object other)
         {
             return Equals(other);

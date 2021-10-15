@@ -20,19 +20,19 @@
             _price = 0;
         }
 
-        public Product GetProductRef()
+        public Product ProductRef
         {
-            return _productRef;
+            get { return _productRef; }
         }
 
-        public int GetProductAmount()
+        public int ProductAmount
         {
-            return _amount;
+            get { return _amount; }
         }
 
-        public double GetProductPrice()
+        public double ProductPrice
         {
-            return _price;
+            get { return _price; }
         }
     }
 }

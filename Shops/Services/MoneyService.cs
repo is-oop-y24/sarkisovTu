@@ -21,14 +21,14 @@ namespace Shops.Services
             double balance = 0;
             foreach (Transaction transaction in transactions)
             {
-                if (transaction.GetOperationType() == "deposit")
+                if (transaction.OperationType == "deposit")
                 {
-                    balance += transaction.GetAmount();
+                    balance += transaction.Amount;
                 }
 
-                if (transaction.GetOperationType() == "withdraw")
+                if (transaction.OperationType == "withdraw")
                 {
-                    balance -= transaction.GetAmount();
+                    balance -= transaction.Amount;
                 }
             }
 

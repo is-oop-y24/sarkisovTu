@@ -37,10 +37,10 @@ namespace Shops.Services
             {
                 foreach (ProductConfiguration requestProduct in productWishList)
                 {
-                    ProductConfiguration shopProduct = shop.GetProductStock().Find(product => product.GetProductRef().Equals(requestProduct.GetProductRef()));
-                    if (shopProduct != null && shopProduct.GetProductAmount() >= requestProduct.GetProductAmount())
+                    ProductConfiguration shopProduct = shop.GetProductStock().Find(product => product.ProductRef.Equals(requestProduct.ProductRef));
+                    if (shopProduct != null && shopProduct.ProductAmount >= requestProduct.ProductAmount)
                     {
-                        checkOffers[_shopsList.IndexOf(shop)] += shopProduct.GetProductPrice() * requestProduct.GetProductAmount();
+                        checkOffers[_shopsList.IndexOf(shop)] += shopProduct.ProductPrice * requestProduct.ProductAmount;
                     }
                     else
                     {

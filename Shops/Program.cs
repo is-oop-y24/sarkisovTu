@@ -6,7 +6,6 @@ namespace Shops
     {
         private static void Main()
         {
-            var shopsManager = new ShopsManager();
         }
     }
 }

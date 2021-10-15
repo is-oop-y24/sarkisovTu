@@ -15,14 +15,9 @@ namespace Shops.Models
             _transactions.Add(MoneyService.CreateDeposit(balance));
         }
 
-        public string GetName()
+        public double Balance
         {
-            return _name;
-        }
-
-        public double GetBalance()
-        {
-            return MoneyService.CalculateBalance(_transactions);
+            get { return MoneyService.CalculateBalance(_transactions); }
         }
 
         public void AddTransaction(Transaction transaction)
