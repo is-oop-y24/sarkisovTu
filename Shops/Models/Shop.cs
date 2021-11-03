@@ -19,6 +19,11 @@ namespace Shops.Models
             _transactions = new List<Transaction>();
         }
 
+        public double Balance
+        {
+            get { return MoneyService.CalculateBalance(_transactions); }
+        }
+
         public void AddProduct(Product product, int amount, double price)
         {
             var newShopProduct = new ProductConfiguration(product, amount, price);
@@ -94,23 +99,12 @@ namespace Shops.Models
 
         public ProductConfiguration GetProductInfo(Product productToFind)
         {
-            ProductConfiguration queryConfiguration = _productStock.Find(config => config.ProductRef.Equals(productToFind));
-            return queryConfiguration;
+            return _productStock.Find(config => config.ProductRef.Equals(productToFind));
         }
 
         public void AddTransaction(Transaction transaction)
         {
             _transactions.Add(transaction);
-        }
-
-        public string GetName()
-        {
-            return _name;
-        }
-
-        public double GetBalance()
-        {
-            return MoneyService.CalculateBalance(_transactions);
         }
     }
 }

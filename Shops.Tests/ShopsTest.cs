@@ -114,11 +114,11 @@ namespace Shops.Tests
             var orangeConfigRequest = new ProductConfiguration(orange, productCountToBuy);
             wishList.Add(orangeConfigRequest);
 
-            double shop1BalanceBeforePurchase = shop1.GetBalance();
+            double shop1BalanceBeforePurchase = shop1.Balance;
             shop1.RegisterPurchase(customer1, wishList);
 
             Assert.AreEqual(startUserBalance - productPrice * orangeConfigRequest.ProductAmount, customer1.Balance);
-            Assert.AreEqual(shop1BalanceBeforePurchase + productPrice * orangeConfigRequest.ProductAmount, shop1.GetBalance());
+            Assert.AreEqual(shop1BalanceBeforePurchase + productPrice * orangeConfigRequest.ProductAmount, shop1.Balance);
             Assert.AreEqual(productCount - productCountToBuy, shop1.GetProductInfo(orange).ProductAmount);
         }
     }

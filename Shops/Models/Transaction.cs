@@ -1,33 +1,26 @@
-﻿using Shops.Tools;
+﻿using System;
+using Shops.Tools;
 
 namespace Shops.Models
 {
     public class Transaction
     {
-        private readonly string _operationType;
-        private readonly double _amount;
-
-        public Transaction(string operationType, double amount)
+        public Transaction(TransactionType operationType, double amount)
         {
-            if (operationType == "deposit" || operationType == "withdraw")
-            {
-                _operationType = operationType;
-                _amount = amount;
-            }
-            else
-            {
-                throw new ShopsException("Invalid transaction type");
-            }
+            OperationType = operationType;
+            Amount = amount;
         }
 
-        public string OperationType
+        public TransactionType OperationType
         {
-            get { return _operationType; }
+            get;
+            private set;
         }
 
         public double Amount
         {
-            get { return _amount; }
+            get;
+            private set;
         }
     }
 }

@@ -16,12 +16,14 @@ namespace Shops.Models
 
         public override bool Equals(object other)
         {
+            if (other.GetType().Name != "Product") return false;
             return Equals(other);
         }
 
         public bool Equals(Product other)
         {
             if (other == null) return false;
+            if (this._id == other._id) return true;
             if (ReferenceEquals(this, other)) return true;
             return false;
         }

@@ -7,13 +7,13 @@ namespace Shops.Services
     {
         public static void ShopTransaction(Person source, Shop destination, double amount)
         {
-            source.AddTransaction(new Transaction("withdraw", amount));
-            destination.AddTransaction(new Transaction("deposit", amount));
+            source.AddTransaction(new Transaction(TransactionType.Withdraw, amount));
+            destination.AddTransaction(new Transaction(TransactionType.Deposit, amount));
         }
 
         public static Transaction CreateDeposit(double amount)
         {
-            return new Transaction("deposit", amount);
+            return new Transaction(TransactionType.Deposit, amount);
         }
 
         public static double CalculateBalance(List<Transaction> transactions)
@@ -21,12 +21,12 @@ namespace Shops.Services
             double balance = 0;
             foreach (Transaction transaction in transactions)
             {
-                if (transaction.OperationType == "deposit")
+                if ((int)transaction.OperationType == 1)
                 {
                     balance += transaction.Amount;
                 }
 
-                if (transaction.OperationType == "withdraw")
+                if ((int)transaction.OperationType == 2)
                 {
                     balance -= transaction.Amount;
                 }
