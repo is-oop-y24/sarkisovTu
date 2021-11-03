@@ -28,6 +28,9 @@ namespace Shops.Services
         public Shop FindBestBid(List<ProductConfiguration> productWishList)
         {
             double[] checkOffers = new double[_shopsList.Count];
+            int bestBidShopIndex = 0;
+            int rejectedShopsCount = 0;
+
             for (int i = 0; i < _shopsList.Count; i++)
             {
                 checkOffers[i] = 0;
@@ -45,27 +48,21 @@ namespace Shops.Services
                     else
                     {
                         checkOffers[_shopsList.IndexOf(shop)] = -1;
+                        rejectedShopsCount++;
                         break;
                     }
                 }
             }
 
-            int bestBidShopIndex = 0;
-            int rejectedShopsCount = 0;
+            if (rejectedShopsCount == _shopsList.Count) throw new ShopsException("No suitable offers were found");
+
             for (int i = 0; i < checkOffers.Length; i++)
             {
-                if ((int)checkOffers[i] == -1)
-                {
-                    rejectedShopsCount++;
-                }
-
                 if (checkOffers[i] < checkOffers[bestBidShopIndex] && (int)checkOffers[i] != -1)
                 {
                     bestBidShopIndex = i;
                 }
             }
-
-            if (rejectedShopsCount == _shopsList.Count) throw new ShopsException("No suitable offers were found");
 
             return _shopsList[bestBidShopIndex];
         }

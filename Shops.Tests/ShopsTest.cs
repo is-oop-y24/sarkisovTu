@@ -24,17 +24,21 @@ namespace Shops.Tests
             Product milk = _shopsManager.CreateProduct("Milk");
             shop1.AddProduct(orange, 10, 1.5);
             shop1.AddProduct(milk, 20, 5);
-            Assert.Pass("Products were added to shop");
+            Assert.AreEqual(shop1.GetProductInfo(orange).ProductRef, orange);
+            Assert.AreEqual(shop1.GetProductInfo(milk).ProductRef, milk);
         }
 
         [Test]
         public void ChangeProductPrice_PriceChanged()
         {
+            double startPrice = 1.5;
+            double changedPrice = 1;
             Shop shop1 = _shopsManager.CreateShop("Whole Foods");
             Product orange = _shopsManager.CreateProduct("Orange");
-            shop1.AddProduct(orange, 10, 1.5);
-            shop1.ChangeProductPrice(orange, 1);
-            Assert.Pass("Priced on product was changed");
+            shop1.AddProduct(orange, 10, startPrice);
+            Assert.AreEqual(shop1.GetProductInfo(orange).ProductPrice, startPrice);
+            shop1.ChangeProductPrice(orange, changedPrice);
+            Assert.AreEqual(shop1.GetProductInfo(orange).ProductPrice, changedPrice);
         }
 
         [Test]
@@ -121,5 +125,15 @@ namespace Shops.Tests
             Assert.AreEqual(shop1BalanceBeforePurchase + productPrice * orangeConfigRequest.ProductAmount, shop1.Balance);
             Assert.AreEqual(productCount - productCountToBuy, shop1.GetProductInfo(orange).ProductAmount);
         }
+
+        [Test]
+        public void CompareProductWithNonProductObject_ObjectsAreDifferent()
+        {
+            Shop shop1 = _shopsManager.CreateShop("Whole Foods");
+            var customer1 = new Person("Name Surname", 1000);
+            Product orange = _shopsManager.CreateProduct("Orange");
+            Assert.AreEqual(orange.Equals(customer1), false);
+        }
+        
     }
 }
