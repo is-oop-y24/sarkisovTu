@@ -2,7 +2,7 @@
 {
     public class ScheduleTime
     {
-        public ScheduleTime(int day, string startTime, string endTime)
+        public ScheduleTime(int day, Time startTime, Time endTime)
         {
             Day = day;
             StartTime = startTime;
@@ -11,8 +11,8 @@
 
         public int Day { get; private set; }
 
-        public string StartTime { get; private set; }
+        public Time StartTime { get; private set; }
 
-        public string EndTime { get; private set; }
+        public Time EndTime { get; private set; }
     }
 }

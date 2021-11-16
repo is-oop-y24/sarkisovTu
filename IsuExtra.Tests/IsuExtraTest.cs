@@ -35,10 +35,10 @@ namespace IsuExtra.Tests
             ElectiveShift biotechnologyShift1 = _electiveManager.CreateShiftGroup(biotechnologyCourse);
             ElectiveGroup biotechnologyGroup1 = _electiveManager.CreatePracticeGroup(biotechnologyShift1, 10);
             
-            var time1 = new ScheduleTime(1, "8:20", "9:50");
-            var time2 = new ScheduleTime(1, "10:00", "11:30");
-            var time3 = new ScheduleTime(1, "11:40", "13:10");
-            var time4 = new ScheduleTime(1, "13:30", "15:00");
+            var time1 = new ScheduleTime(1, new Time(8, 20), new Time(9, 50));
+            var time2 = new ScheduleTime(1, new Time(10, 00), new Time(11, 30));
+            var time3 = new ScheduleTime(1, new Time(11, 40), new Time(13, 10));
+            var time4 = new ScheduleTime(1, new Time(13, 30), new Time(15, 00));
 
             Class cyberSecurityLecture1 = _scheduleManager.CreateClass(ClassType.Lecture, "Cyber security basics", time1, cyberSecurityShift1.Name);
             Class cyberSecurityPractice1 = _scheduleManager.CreateClass(ClassType.Practice, "Cyber security basics", time2, cyberSecurityGroup1.Name);
@@ -57,17 +57,17 @@ namespace IsuExtra.Tests
             Group m3208 = _isuService.AddGroup("M3208");
             Student student1 = _isuService.AddStudent(m3208, "Nikita Sarkisov");
             
-            var time1 = new ScheduleTime(1, "17:00", "18:30");
+            var time1 = new ScheduleTime(1, new Time(17, 00), new Time(18, 30));
             Class studentRegularClass1 = _scheduleManager.CreateClass(ClassType.Practice, "Physics", time1, m3208.Name);
 
             ElectiveGroup cyberSecurityGroup1 = _electiveManager.GetPracticeGroupByName("KIB 1.1");
             ElectiveGroup photonicsGroup1 = _electiveManager.GetPracticeGroupByName("FTE 1.1");
             ElectiveGroup biotechnologyGroup1 = _electiveManager.GetPracticeGroupByName("FBT 1.1");
             
+            _electiveManager.SubscribeCourse(student1, cyberSecurityGroup1);
+            _electiveManager.SubscribeCourse(student1, photonicsGroup1);
             Assert.Catch<IsuExtraException>(() =>
             {
-                _electiveManager.SubscribeCourse(student1, cyberSecurityGroup1);
-                _electiveManager.SubscribeCourse(student1, photonicsGroup1);
                 _electiveManager.SubscribeCourse(student1, biotechnologyGroup1);
             });
         }
@@ -78,7 +78,7 @@ namespace IsuExtra.Tests
             Group m3208 = _isuService.AddGroup("M3208");
             Student student1 = _isuService.AddStudent(m3208, "Nikita Sarkisov");
             
-            var time1 = new ScheduleTime(1, "10:00", "11:30");
+            var time1 = new ScheduleTime(1, new Time(10, 00), new Time(11, 30));
             Class studentRegularClass1 = _scheduleManager.CreateClass(ClassType.Practice, "Mathematical analysis", time1, m3208.Name);
             
             ElectiveGroup cyberSecurityGroup1 = _electiveManager.GetPracticeGroupByName("KIB 1.1");
@@ -95,7 +95,7 @@ namespace IsuExtra.Tests
             Group n3211 = _isuService.AddGroup("N3211");
             Student student1 = _isuService.AddStudent(n3211, "Nikita Sarkisov");
             
-            var time1 = new ScheduleTime(1, "11:40", "13:10");
+            var time1 = new ScheduleTime(1, new Time(11, 40), new Time(13,10));
             Class studentRegularClass = _scheduleManager.CreateClass(ClassType.Lecture, "Programing", time1, n3211.Name);
 
             ElectiveGroup cyberSecurityGroup1 = _electiveManager.GetPracticeGroupByName("KIB 1.1");
@@ -112,15 +112,17 @@ namespace IsuExtra.Tests
             Group m3208 = _isuService.AddGroup("M3208");
             
             ElectiveGroup cyberSecurityGroup1 = _electiveManager.GetPracticeGroupByName("KIB 1.1");
-
-            Assert.Catch(() =>
-            {
-                for (int i = 0; i < 20; i++)
-                {
-                    Student student = _isuService.AddStudent(m3208, $"Student no.{i}");
-                    _electiveManager.SubscribeCourse(student, cyberSecurityGroup1);
             
-                }
+            for (int i = 0; i < cyberSecurityGroup1.MaxStudentNumber; i++)
+            {
+                Student student = _isuService.AddStudent(m3208, $"Student no.{i}");
+                _electiveManager.SubscribeCourse(student, cyberSecurityGroup1);
+            }
+            
+            Student extraStudent = _isuService.AddStudent(m3208, $"Nikita Sarkisov");
+            Assert.Catch<IsuExtraException>(() =>
+            {
+                _electiveManager.SubscribeCourse(extraStudent, cyberSecurityGroup1);
             });
         }
 

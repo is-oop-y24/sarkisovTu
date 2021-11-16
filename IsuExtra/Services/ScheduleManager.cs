@@ -47,11 +47,11 @@ namespace IsuExtra.Services
         {
             if (first.Time.Day != second.Time.Day) return false;
 
-            int thisStartTime = int.Parse(first.Time.StartTime.Replace(":", string.Empty));
-            int thisEndTime = int.Parse(first.Time.EndTime.Replace(":", string.Empty));
+            int thisStartTime = int.Parse(first.Time.StartTime.ToString().Replace(":", string.Empty));
+            int thisEndTime = int.Parse(first.Time.EndTime.ToString().Replace(":", string.Empty));
 
-            int otherStartTime = int.Parse(second.Time.StartTime.Replace(":", string.Empty));
-            int otherEndTime = int.Parse(second.Time.EndTime.Replace(":", string.Empty));
+            int otherStartTime = int.Parse(second.Time.StartTime.ToString().Replace(":", string.Empty));
+            int otherEndTime = int.Parse(second.Time.EndTime.ToString().Replace(":", string.Empty));
 
             if (thisEndTime >= otherStartTime && thisEndTime <= otherEndTime)
             {
