@@ -6,7 +6,7 @@ namespace IsuExtra.Models
     {
         public Time(int hours, int minutes)
         {
-            if (hours > 23 || minutes > 59)
+            if (hours > 23 || minutes > 59 || hours < 0 || minutes < 0)
             {
                 throw new IsuExtraException("Invalid time specified");
             }
