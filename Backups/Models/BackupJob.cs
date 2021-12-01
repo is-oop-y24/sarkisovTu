@@ -15,16 +15,16 @@ namespace Backups.Models
         private string _name;
         private T _repositorySystem;
         private string _pathToSave;
-        private int _backupType;
+        private IBackupAlgorithm _backupAlgorithm;
         private List<JobObject> _jobObjects;
         private List<RestorePoint> _restorePoints;
 
-        public BackupJob(string name, T repositorySystem, BackupAlgorithmType type, string pathToSave)
+        public BackupJob(string name, T repositorySystem, IBackupAlgorithm backupAlgorithm, string pathToSave)
         {
             _name = name;
             _repositorySystem = repositorySystem;
             _pathToSave = pathToSave;
-            _backupType = (int)type;
+            _backupAlgorithm = backupAlgorithm;
             _jobObjects = new List<JobObject>();
             _restorePoints = new List<RestorePoint>();
         }
@@ -67,32 +67,8 @@ namespace Backups.Models
 
         public RestorePoint CreateRestorePoint()
         {
-            List<BackupStorage> backupStorages = _jobObjects.Select(curJob => new BackupStorage(_repositorySystem, curJob.Path, curJob.Content)).ToList();
-            RestorePoint newRestorePoint = new RestorePoint(backupStorages);
+            RestorePoint newRestorePoint = _backupAlgorithm.CreateRestorePoint(_jobObjects, _repositorySystem, BackupJobNamePattern, BackupDatePattern, RestorePointNamePattern, _pathToSave, _name);
             _restorePoints.Add(newRestorePoint);
-            string restorePointCreationDate = newRestorePoint.DateOfCreation.ToString(BackupDatePattern);
-
-            string backupDirectory = _repositorySystem.JoinPath(_pathToSave, $"\\{BackupJobNamePattern} {_name}");
-            string restorePointDirectory = _repositorySystem.JoinPath(backupDirectory, $"\\{RestorePointNamePattern} {restorePointCreationDate}");
-            _repositorySystem.CreateDirectory(backupDirectory);
-            _repositorySystem.CreateDirectory(restorePointDirectory);
-
-            if (_backupType == 0)
-            {
-                foreach (var storage in backupStorages)
-                {
-                    string curStorageArchivePath = _repositorySystem.JoinPath(restorePointDirectory, $"\\{storage.Name.Split(".")[0]}.zip");
-                    _repositorySystem.CreateArchive(curStorageArchivePath, new List<BackupStorage>() { storage });
-                }
-            }
-
-            if (_backupType == 1)
-            {
-                const string backupArchiveName = "Backup-collection";
-                string curStorageArchivePath = _repositorySystem.JoinPath(restorePointDirectory, $"\\{backupArchiveName}.zip");
-                _repositorySystem.CreateArchive(curStorageArchivePath, backupStorages);
-            }
-
             return newRestorePoint;
         }
 

@@ -22,7 +22,7 @@ namespace Backups.Tests
         [Test]
         public void CreateNewRestorePointAfterChangingFile_StorageContainsUpdatedFile()
         {
-            var backupJob = new BackupJob<InMemoryRepository>("test job", _inMemoryRepository, BackupAlgorithmType.SingleStorages, @"root\output");
+            var backupJob = new BackupJob<InMemoryRepository>("test job", _inMemoryRepository, new SingleStoragesAlgorithm(), @"root\output");
             backupJob.AddJobObject(@"root\files\1.txt");
             RestorePoint restorePoint1 = backupJob.CreateRestorePoint();
             string restorePointPath1 = backupJob.GetPathOfRestorePoint(restorePoint1);
@@ -48,7 +48,7 @@ namespace Backups.Tests
         [Test]
         public void RunJobWithObjectReferToDeletedFile_ThrowException()
         {
-            var backupJob = new BackupJob<InMemoryRepository>("test job", _inMemoryRepository, BackupAlgorithmType.SingleStorages, @"root\output");
+            var backupJob = new BackupJob<InMemoryRepository>("test job", _inMemoryRepository, new SingleStoragesAlgorithm(), @"root\output");
             backupJob.AddJobObject(@"root\files\1.txt");
             backupJob.AddJobObject(@"root\files\2.txt");
             _inMemoryRepository.DeleteFile(@"root\files\1.txt");
@@ -61,7 +61,7 @@ namespace Backups.Tests
         [Test]
         public void RunSplitStoragesJobAndDeleteOneFile_TwoRestorePointsAndThreeStoragesWereCreated()
         {
-            var backupJobSplit = new BackupJob<InMemoryRepository>("Split job", _inMemoryRepository, BackupAlgorithmType.SplitStorages, @"root\output");
+            var backupJobSplit = new BackupJob<InMemoryRepository>("Split job", _inMemoryRepository, new SplitStoragesAlgorithm(), @"root\output");
             backupJobSplit.AddJobObject(@"root\files\1.txt");
             backupJobSplit.AddJobObject(@"root\files\2.txt");
             backupJobSplit.CreateRestorePoint();
@@ -78,7 +78,7 @@ namespace Backups.Tests
         [Test]
         public void RunSingleJobWithTwoFiles_DirectoryWithArchiveWasCreated()
         {
-            var backupJobSingle = new BackupJob<InMemoryRepository>("Single job", _inMemoryRepository, BackupAlgorithmType.SingleStorages, @"root\output");
+            var backupJobSingle = new BackupJob<InMemoryRepository>("Single job", _inMemoryRepository, new SingleStoragesAlgorithm(), @"root\output");
             backupJobSingle.AddJobObject(@"root\files\1.txt");
             backupJobSingle.AddJobObject(@"root\files\2.txt");
             RestorePoint restorePoint1 = backupJobSingle.CreateRestorePoint();
