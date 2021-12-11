@@ -372,6 +372,7 @@ namespace Banks.ConsoleInterface
                 ConsoleMenu verificationPropertyMenu = new ConsoleMenu("Choose verification method", options);
                 int selectedIndex = verificationPropertyMenu.Run();
                 string selectedOption = options[selectedIndex];
+                if (selectedIndex == options.Count - 1 && kycProperties.Count >= 1) break;
                 int kycIndex = (int)Enum.Parse(typeof(KycType), selectedOption);
                 KycType selectedType = (KycType)kycIndex;
                 WriteLine($"{selectedOption}: ");
