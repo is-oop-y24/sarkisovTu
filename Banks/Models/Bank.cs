@@ -75,7 +75,7 @@ namespace Banks.Models
             return newAccount;
         }
 
-        public void CancelTransaction(int id)
+        public void CancelTransaction(Guid id)
         {
             TransactionManager transactionManager = CentralBankRef.TransactionManager;
             transactionManager.CancelTransaction(id);
@@ -83,7 +83,7 @@ namespace Banks.Models
 
         public void PayRemainBonus(DateTime time)
         {
-            List<DebitAccount> debitAccounts = AccountManager.GetDebitAccounts(this);
+            List<Account> debitAccounts = AccountManager.GetDebitAccounts(this);
             DateTime lastRemainPaymentDate = CentralBankRef.RemainHistory.LastOrDefault();
             double remainBonusPercent = CentralBankRef.GetConfiguration(this).DebitAccountPercentProfit;
             bool emptyRemainBonusHistory = lastRemainPaymentDate == default(DateTime);
@@ -104,7 +104,7 @@ namespace Banks.Models
 
         public void WithdrawCommissionFee(DateTime time)
         {
-            List<CreditAccount> creditAccounts = AccountManager.GetCreditAccounts(this);
+            List<Account> creditAccounts = AccountManager.GetCreditAccounts(this);
             DateTime lastCommissionWithdrawDate = CentralBankRef.CommissionHistory.LastOrDefault();
             double commissionFeeValue = CentralBankRef.GetConfiguration(this).CreditAccountFeeAmountDaily;
             bool emptyCommissionHistory = lastCommissionWithdrawDate == default(DateTime);
@@ -125,7 +125,7 @@ namespace Banks.Models
 
         public void PayDepositBonus(DateTime time)
         {
-            List<DepositAccount> depositAccounts = AccountManager.GetDepositAccounts(this);
+            List<Account> depositAccounts = AccountManager.GetDepositAccounts(this);
             DateTime lastDepositBonusDate = CentralBankRef.DepositBonusHistory.LastOrDefault();
 
             bool emptyDepositBonusHistory = lastDepositBonusDate == default(DateTime);

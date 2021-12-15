@@ -5,9 +5,9 @@ namespace Banks.Models
 {
     public class Transaction
     {
-        public Transaction(int id, TransactionType transactionType, DateTime date, Account from, Account to, double value)
+        public Transaction(TransactionType transactionType, DateTime date, Account from, Account to, double value)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             TransactionType = transactionType;
             Date = date;
             From = from;
@@ -25,7 +25,7 @@ namespace Banks.Models
             Value = builder.Value;
         }
 
-        public int Id { get; private set; }
+        public Guid Id { get; private set; }
         public TransactionType TransactionType { get; private set; }
         public DateTime Date { get; private set; }
         public Account From { get; private set; }
@@ -34,13 +34,13 @@ namespace Banks.Models
 
         public class Builder
         {
-            public Builder(int id)
+            public Builder()
             {
-                Id = id;
+                Id = Guid.NewGuid();
                 Date = DateTime.Now;
             }
 
-            internal int Id { get; private set; }
+            internal Guid Id { get; private set; }
             internal TransactionType TransactionType { get; private set; }
             internal DateTime Date { get; private set; }
             internal Account From { get; private set; }

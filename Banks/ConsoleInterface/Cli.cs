@@ -29,9 +29,18 @@ namespace Banks.ConsoleInterface
             ConsoleMenu mainMenu = new ConsoleMenu("Welcome to Banks system", options);
             int selectedIndex = mainMenu.Run();
 
-            if (selectedIndex == 0) RunCentralBankMenu();
-            if (selectedIndex == 1) RunBanksBrowserMenu();
-            if (selectedIndex == 2) ExitSystem();
+            switch (selectedIndex)
+            {
+                case 0:
+                    RunCentralBankMenu();
+                    break;
+                case 1:
+                    RunBanksBrowserMenu();
+                    break;
+                case 2:
+                    ExitSystem();
+                    break;
+            }
         }
 
         private void RunCentralBankMenu()
@@ -159,13 +168,16 @@ namespace Banks.ConsoleInterface
             BankConfiguration newConfiguration = RunBankConfigurationForm();
             int selectedIndex = changeConfigurationMenu.Run();
 
-            if (selectedIndex == 0)
+            switch (selectedIndex)
             {
-                bank.ChangeBankConfiguration(newConfiguration);
-                RunBankConfigurationPropertiesMenu(bank);
+                case 0:
+                    bank.ChangeBankConfiguration(newConfiguration);
+                    RunBankConfigurationPropertiesMenu(bank);
+                    break;
+                case 1:
+                    RunBankConfigurationPropertiesMenu(bank);
+                    break;
             }
-
-            if (selectedIndex == 1) RunBankConfigurationPropertiesMenu(bank);
         }
 
         private void RunChooseNewAccountClientMenu(Bank bank)
@@ -227,9 +239,18 @@ namespace Banks.ConsoleInterface
             ConsoleMenu chooseClientMenu = new ConsoleMenu("Choose client type", options);
             int selectedIndex = chooseClientMenu.Run();
 
-            if (selectedIndex == 0) RunVerifiedClientCreationMenu(bank);
-            if (selectedIndex == 1) RunUnverifiedClientCreationMenu(bank);
-            if (selectedIndex == 2) RunBankMenu(bank);
+            switch (selectedIndex)
+            {
+                case 0:
+                    RunVerifiedClientCreationMenu(bank);
+                    break;
+                case 1:
+                    RunUnverifiedClientCreationMenu(bank);
+                    break;
+                case 2:
+                    RunBankMenu(bank);
+                    break;
+            }
         }
 
         private void RunClientBrowserMenu(Bank bank)

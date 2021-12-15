@@ -19,8 +19,7 @@ namespace Banks.Services
         public Transaction CreateSendTransaction(Account from, Account to, double value)
         {
             if (!IsTransactionValid(value)) throw new BanksException("Incorrect transaction value");
-            int newTransactionId = _transactions.Count;
-            Transaction newTransaction = new Transaction.Builder(newTransactionId)
+            Transaction newTransaction = new Transaction.Builder()
                 .SetTransactionType(TransactionType.Send).SetFromAccount(from).SetToAccount(to).SetValue(value).Build();
             _transactions.Add(newTransaction);
             return newTransaction;
@@ -29,8 +28,7 @@ namespace Banks.Services
         public Transaction CreateDepositTransaction(Account to, double value)
         {
             if (!IsTransactionValid(value)) throw new BanksException("Incorrect transaction value");
-            int newTransactionId = _transactions.Count;
-            Transaction newTransaction = new Transaction.Builder(newTransactionId)
+            Transaction newTransaction = new Transaction.Builder()
                 .SetTransactionType(TransactionType.Deposit).SetFromAccount(null).SetToAccount(to).SetValue(value)
                 .Build();
             _transactions.Add(newTransaction);
@@ -40,19 +38,17 @@ namespace Banks.Services
         public Transaction CreateWithdrawTransaction(Account from, double value)
         {
             if (!IsTransactionValid(value)) throw new BanksException("Incorrect transaction value");
-            int newTransactionId = _transactions.Count;
-            Transaction newTransaction = new Transaction.Builder(newTransactionId)
+            Transaction newTransaction = new Transaction.Builder()
                 .SetTransactionType(TransactionType.Withdraw).SetFromAccount(from).SetToAccount(null).SetValue(value)
                 .Build();
             _transactions.Add(newTransaction);
             return newTransaction;
         }
 
-        public void CancelTransaction(int transactionId)
+        public void CancelTransaction(Guid transactionId)
         {
             Transaction transactionToCancel = _transactions.Find(transaction => transaction.Id == transactionId);
             if (transactionToCancel == null) throw new BanksException("Transaction with provided Id wasn't found");
-            int newTransactionId = _transactions.Count();
             CreateSendTransaction(transactionToCancel.To, transactionToCancel.From, transactionToCancel.Value);
         }
 

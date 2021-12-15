@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Banks.Models;
 using Banks.Repository;
 using Banks.Tools;
@@ -17,7 +18,8 @@ namespace Banks.Services
 
         public DebitAccount CreateDebitAccount(BankClient client, Bank bank)
         {
-            string newAccountId = ((int)AccountType.Debit).ToString() + '-' + _accountRepository.DebitAccounts.Count;
+            int accountCount = _accountRepository.Accounts.Where(account => account.AccountType == AccountType.Debit).Count();
+            string newAccountId = ((int)AccountType.Debit).ToString() + '-' + accountCount;
             DebitAccount newAccount = new DebitAccount(newAccountId, AccountType.Debit, client, bank);
             _accountRepository.AddAccount(newAccount);
             return newAccount;
@@ -28,7 +30,8 @@ namespace Banks.Services
             if (!bank.BankConfigurationProperties.AvailableDepositAccountLockedDays.Contains(days))
                 throw new BanksException("Bank doesn't provide this locked period");
             DateTime expirationDate = DateTime.Now.AddDays(days);
-            string newAccountId = ((int)AccountType.Deposit).ToString() + '-' + _accountRepository.DepositAccounts.Count;
+            int accountCount = _accountRepository.Accounts.Where(account => account.AccountType == AccountType.Deposit).Count();
+            string newAccountId = ((int)AccountType.Deposit).ToString() + '-' + accountCount;
             DepositAccount newAccount = new DepositAccount(newAccountId, AccountType.Deposit, client, bank, initialSum, expirationDate);
             _accountRepository.AddAccount(newAccount);
             newAccount.DepositMoney(initialSum);
@@ -37,23 +40,24 @@ namespace Banks.Services
 
         public CreditAccount CreateCreditAccount(BankClient client, Bank bank)
         {
-            string newAccountId = ((int)AccountType.Credit).ToString() + '-' + _accountRepository.CreditAccounts.Count;
+            int accountCount = _accountRepository.Accounts.Where(account => account.AccountType == AccountType.Credit).Count();
+            string newAccountId = ((int)AccountType.Credit).ToString() + '-' + accountCount;
             CreditAccount newAccount = new CreditAccount(newAccountId, AccountType.Credit, client, bank);
             _accountRepository.AddAccount(newAccount);
             return newAccount;
         }
 
-        public List<DebitAccount> GetDebitAccounts(Bank bank)
+        public List<Account> GetDebitAccounts(Bank bank)
         {
             return _accountRepository.GetDebitAccounts(bank);
         }
 
-        public List<DepositAccount> GetDepositAccounts(Bank bank)
+        public List<Account> GetDepositAccounts(Bank bank)
         {
             return _accountRepository.GetDepositAccounts(bank);
         }
 
-        public List<CreditAccount> GetCreditAccounts(Bank bank)
+        public List<Account> GetCreditAccounts(Bank bank)
         {
             return _accountRepository.GetCreditAccounts(bank);
         }
