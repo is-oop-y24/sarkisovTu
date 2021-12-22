@@ -46,6 +46,11 @@ namespace Backups.Repository
             File.WriteAllText(Path.Combine(path, name), content);
         }
 
+        public bool IsFileExist(string path)
+        {
+            return File.Exists(path);
+        }
+
         public string[] GetFilesInDirectory(string path)
         {
             return Directory.GetFiles(@path);
@@ -69,6 +74,11 @@ namespace Backups.Repository
         public void DeleteFile(string path)
         {
             File.Delete(path);
+        }
+
+        public void DeleteFolder(string path)
+        {
+            Directory.Delete(path, true);
         }
 
         public string JoinPath(string path1, string path2)

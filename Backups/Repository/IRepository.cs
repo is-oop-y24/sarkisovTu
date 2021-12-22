@@ -10,6 +10,8 @@ namespace Backups.Repository
         void CreateFileInDirectory(string path, string name, string content);
 
         bool IsDirectoryExist(string path);
+
+        bool IsFileExist(string path);
         string[] GetFilesInDirectory(string path);
 
         string ReadFile(string path);
@@ -17,6 +19,8 @@ namespace Backups.Repository
         void UpdateFile(string path, string newContent);
 
         void DeleteFile(string path);
+
+        void DeleteFolder(string path);
 
         string JoinPath(string path1, string path2);
     }

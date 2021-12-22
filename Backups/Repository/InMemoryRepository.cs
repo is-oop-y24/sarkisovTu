@@ -7,12 +7,12 @@ namespace Backups.Repository
 {
     public class InMemoryRepository : IRepository
     {
-        private EmulatedFolder _rootFolder;
-
         public InMemoryRepository()
         {
-            _rootFolder = new EmulatedFolder("root");
+            RootFolder = new EmulatedFolder("root");
         }
+
+        public EmulatedFolder RootFolder { get; private set; }
 
         public void CreateArchive(string path, List<BackupStorage> storages)
         {
@@ -26,7 +26,7 @@ namespace Backups.Repository
         public void CreateDirectory(string path)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length; i++)
@@ -44,7 +44,7 @@ namespace Backups.Repository
         public void CreateFileInDirectory(string path, string name, string content)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length; i++)
@@ -67,7 +67,7 @@ namespace Backups.Repository
         public bool IsDirectoryExist(string path)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length; i++)
@@ -80,10 +80,26 @@ namespace Backups.Repository
             return true;
         }
 
+        public bool IsFileExist(string path)
+        {
+            string[] separatedPath = path.Split("\\");
+            EmulatedFolder curFolder = RootFolder;
+            if (separatedPath[0] == "root")
+            {
+                for (int i = 1; i < separatedPath.Length - 1; i++)
+                {
+                    if (!curFolder.HasFolder(separatedPath[i])) return false;
+                    curFolder = curFolder.GetFolder(separatedPath[i]);
+                }
+            }
+
+            return Array.Find(curFolder.GetFiles(), fileName => fileName == separatedPath[^1]) != null;
+        }
+
         public string[] GetFilesInDirectory(string path)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length; i++)
@@ -99,7 +115,7 @@ namespace Backups.Repository
         public string ReadFile(string path)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length - 1; i++)
@@ -115,7 +131,7 @@ namespace Backups.Repository
         public void UpdateFile(string path, string newContent)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length - 1; i++)
@@ -131,7 +147,7 @@ namespace Backups.Repository
         public void DeleteFile(string path)
         {
             string[] separatedPath = path.Split("\\");
-            EmulatedFolder curFolder = _rootFolder;
+            EmulatedFolder curFolder = RootFolder;
             if (separatedPath[0] == "root")
             {
                 for (int i = 1; i < separatedPath.Length - 1; i++)
@@ -142,6 +158,22 @@ namespace Backups.Repository
             }
 
             curFolder.DeleteFile(separatedPath[^1]);
+        }
+
+        public void DeleteFolder(string path)
+        {
+            string[] separatedPath = path.Split("\\");
+            EmulatedFolder curFolder = RootFolder;
+            if (separatedPath[0] == "root")
+            {
+                for (int i = 1; i < separatedPath.Length - 1; i++)
+                {
+                    if (!curFolder.HasFolder(separatedPath[i])) throw new BackupsException("Unable to find specified file");
+                    curFolder = curFolder.GetFolder(separatedPath[i]);
+                }
+            }
+
+            curFolder.DeleteFolder(separatedPath[^1]);
         }
 
         public string JoinPath(string path1, string path2)
