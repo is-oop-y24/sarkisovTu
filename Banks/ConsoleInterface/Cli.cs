@@ -22,6 +22,11 @@ namespace Banks.ConsoleInterface
             RunMainMenu();
         }
 
+        public void DisplayNotification(Bank bank, BankClient client)
+        {
+            RunNotificationPanelMenu(bank, client);
+        }
+
         private void RunMainMenu()
         {
             Clear();
@@ -80,7 +85,7 @@ namespace Banks.ConsoleInterface
             WriteLine("New bank name: ");
             string name = ReadLine();
             BankConfiguration bankConfiguration = RunBankConfigurationForm();
-            _centralBank.CreateBank(name, bankConfiguration, new ConsoleAppNotificationManager());
+            _centralBank.CreateBank(name, bankConfiguration);
             RunMainMenu();
         }
 
@@ -277,11 +282,11 @@ namespace Banks.ConsoleInterface
             Clear();
             List<string> options = new List<string>() { "Accounts list", "Return to client browser" };
             bool subscribedClientMenu = false;
-            if (bank.NotificationManager.IsSubscribedClient(client))
+            if (bank.IsClientSubscribed(client))
             {
                 subscribedClientMenu = true;
                 options.Insert(0, "Unsubscribe from notifications");
-                options.Insert(0, "Unchecked notifications");
+                options.Insert(0, "Client notifications");
             }
             else
             {
@@ -301,7 +306,7 @@ namespace Banks.ConsoleInterface
                         RunNotificationPanelMenu(bank, client);
                         break;
                     case 1:
-                        bank.UnsubscribeClientFromNotifications(client);
+                        bank.UnsubscribeClientFromNotifications(bank.GetObserverByClient(client));
                         RunClientPersonalMenu(bank, client);
                         break;
                     case 2:
@@ -314,7 +319,7 @@ namespace Banks.ConsoleInterface
                 switch (selectedIndex)
                 {
                     case 0:
-                        bank.SubscribeClientForNotifications(client);
+                        bank.SubscribeClientForNotifications(new ConsoleAppObserver(this, bank, client));
                         RunClientPersonalMenu(bank, client);
                         break;
                     case 1:
@@ -351,11 +356,11 @@ namespace Banks.ConsoleInterface
         private void RunNotificationPanelMenu(Bank bank, BankClient client)
         {
             Clear();
-            List<Notification> notifications = bank.GetUncheckedNotifications(client);
-            string menuHeader = "Unchecked notifications of client \n";
+            List<Notification> notifications = bank.GetAllNotifications(bank.GetObserverByClient(client));
+            string menuHeader = "Realtime notifications of client \n";
             if (notifications.Count == 0)
             {
-                menuHeader += "Client hasn't unchecked notifications \n";
+                menuHeader += "Client hasn't any notifications \n";
             }
             else
             {

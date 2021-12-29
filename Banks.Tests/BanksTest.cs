@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Banks.ConsoleInterface;
 using Banks.Models;
 using Banks.Services;
 using Banks.Tools;
@@ -18,7 +19,7 @@ namespace Banks.Tests
         public void Setup()
         {
             _centralBank = new CentralBankService();
-            
+
             Dictionary<MoneyRange, double> depositTable = new Dictionary<MoneyRange, double>();
             depositTable.Add(new MoneyRange(0, 10000), 3.65);
             depositTable.Add(new MoneyRange(10000, 100000), 7.30);
@@ -39,8 +40,8 @@ namespace Banks.Tests
                 depositTable,
                 500,
                 -300000);
-            _chase = _centralBank.CreateBank("Chase", bankConfiguration1, new ConsoleAppNotificationManager());
-            _morganStanley = _centralBank.CreateBank("Morgan Stanley", bankConfiguration2, new ConsoleAppNotificationManager());
+            _chase = _centralBank.CreateBank("Chase", bankConfiguration1);
+            _morganStanley = _centralBank.CreateBank("Morgan Stanley", bankConfiguration2);
         }
 
         [Test]

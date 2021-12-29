@@ -26,10 +26,10 @@ namespace Banks.Services
 
         public List<DateTime> DepositBonusHistory { get; private set; }
 
-        public Bank CreateBank(string name, BankConfiguration configuration, INotificationManager notificationManager)
+        public Bank CreateBank(string name, BankConfiguration configuration)
         {
             if (Banks.Keys.ToList().Find(bank => bank.Name == name) != null) throw new BanksException("Bank with this name is already exist");
-            Bank newBank = new Bank(this, name, notificationManager);
+            Bank newBank = new Bank(this, name);
             Banks.Add(newBank, configuration);
             return newBank;
         }

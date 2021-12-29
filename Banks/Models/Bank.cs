@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using Banks.Services;
+using Banks.Tools;
 using Banks.Types;
 
 namespace Banks.Models
 {
     public class Bank
     {
-        public Bank(CentralBankService centralBank, string name, INotificationManager notificationManager)
+        public Bank(CentralBankService centralBank, string name)
         {
             CentralBankRef = centralBank;
-            NotificationManager = notificationManager;
             Name = name;
             Clients = new List<BankClient>();
+            NotificationClients = new List<IBankObserver>();
         }
 
         public CentralBankService CentralBankRef { get; private set; }
 
-        public INotificationManager NotificationManager { get; private set; }
+        public List<IBankObserver> NotificationClients { get; private set; }
         public string Name { get; private set; }
 
         public List<BankClient> Clients { get; private set; }
@@ -152,71 +153,70 @@ namespace Banks.Models
             if (currentConfiguration.NotVerifiedWithdrawLimitDaily != newConfiguration.NotVerifiedWithdrawLimitDaily)
             {
                 Notification notification = new Notification($"Bank {Name} changed not verified withdraw limit from {currentConfiguration.NotVerifiedWithdrawLimitDaily} to {newConfiguration.NotVerifiedWithdrawLimitDaily}");
-                foreach (BankClient bankClient in Clients)
-                {
-                    if (NotificationManager.IsSubscribedClient(bankClient)) NotificationManager.SendNotificationToClient(bankClient, notification);
-                }
+                NotifyClients(notification);
             }
 
             if (currentConfiguration.NotVerifiedSendLimitDaily != newConfiguration.NotVerifiedSendLimitDaily)
             {
                 Notification notification = new Notification($"Bank {Name} changed not verified send limit from {currentConfiguration.NotVerifiedSendLimitDaily} to {newConfiguration.NotVerifiedSendLimitDaily}");
-                foreach (BankClient bankClient in Clients)
-                {
-                    if (NotificationManager.IsSubscribedClient(bankClient)) NotificationManager.SendNotificationToClient(bankClient, notification);
-                }
+                NotifyClients(notification);
             }
 
             if (currentConfiguration.DebitAccountPercentProfit != newConfiguration.DebitAccountPercentProfit)
             {
                 Notification notification = new Notification($"Bank {Name} changed debit remain bonus from {currentConfiguration.DebitAccountPercentProfit}% to {newConfiguration.DebitAccountPercentProfit}%");
-                foreach (BankClient bankClient in Clients)
-                {
-                    if (NotificationManager.IsSubscribedClient(bankClient)) NotificationManager.SendNotificationToClient(bankClient, notification);
-                }
+                NotifyClients(notification);
             }
 
             if (currentConfiguration.CreditAccountFeeAmountDaily != newConfiguration.CreditAccountFeeAmountDaily)
             {
                 Notification notification = new Notification($"Bank {Name} changed credit daily fee from {currentConfiguration.CreditAccountFeeAmountDaily} to {newConfiguration.CreditAccountFeeAmountDaily}");
-                foreach (BankClient bankClient in Clients)
-                {
-                    if (NotificationManager.IsSubscribedClient(bankClient)) NotificationManager.SendNotificationToClient(bankClient, notification);
-                }
+                NotifyClients(notification);
             }
 
             if (currentConfiguration.CreditAccountLowerLimit != newConfiguration.CreditAccountLowerLimit)
             {
                 Notification notification = new Notification($"Bank {Name} changed credit daily fee from {currentConfiguration.CreditAccountLowerLimit} to {newConfiguration.CreditAccountLowerLimit}");
-                foreach (BankClient bankClient in Clients)
-                {
-                    if (NotificationManager.IsSubscribedClient(bankClient)) NotificationManager.SendNotificationToClient(bankClient, notification);
-                }
+                NotifyClients(notification);
             }
 
             CentralBankRef.ChangeBankConfiguration(this, newConfiguration);
         }
 
-        public void SubscribeClientForNotifications(BankClient client)
+        public void SubscribeClientForNotifications(IBankObserver newNotificationClient)
         {
-            NotificationManager.CreateNotificationClient(client);
+            if (NotificationClients.Find(notificationClient => notificationClient.GetBankClientRef() == newNotificationClient.GetBankClientRef()) != null) throw new BanksException("Attempt to subscribe existing notification client");
+            NotificationClients.Add(newNotificationClient);
             Notification welcomingNotification = new Notification("You was successfully subscribed for notificationsYou was successfully subscribed for notifications");
-            NotificationManager.SendNotificationToClient(client, welcomingNotification);
+            newNotificationClient.Update(welcomingNotification);
         }
 
-        public void UnsubscribeClientFromNotifications(BankClient client)
+        public bool IsClientSubscribed(BankClient client)
         {
-            NotificationManager.RemoveNotificationClient(client);
+            return NotificationClients.Find(notificationClient => notificationClient.GetBankClientRef() == client) != null;
         }
 
-        public List<Notification> GetUncheckedNotifications(BankClient client)
+        public void UnsubscribeClientFromNotifications(IBankObserver notificationClient)
         {
-            return NotificationManager.GetUncheckedNotifications(client);
+            NotificationClients.Remove(notificationClient);
         }
 
-        public List<Notification> GetAllNotifications(BankClient client)
+        public void NotifyClients(Notification notification)
         {
-            return NotificationManager.GetAllNotifications(client);
+            foreach (IBankObserver notificationClient in NotificationClients)
+            {
+                notificationClient.Update(notification);
+            }
+        }
+
+        public IBankObserver GetObserverByClient(BankClient client)
+        {
+            return NotificationClients.Find(notificationClient => notificationClient.GetBankClientRef() == client);
+        }
+
+        public List<Notification> GetAllNotifications(IBankObserver notificationClient)
+        {
+            return notificationClient.GetAllUpdates();
         }
     }
 }
