@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Backups.Models;
 using BackupsExtra.Models;
@@ -17,38 +16,9 @@ namespace BackupsExtra.Services
 
         public OptimizationConfiguration Configuration { get; private set; }
 
-        public List<RestorePoint> OptimizeRestorePoints(BackupJob backupJob)
+        public void FileSystemOptimization(BackupJob backupJob, List<RestorePoint> optimizedRestorePoints)
         {
-            List<RestorePoint> restorePoints = backupJob.RestorePoints;
-            List<RestorePoint> optimizedRestorePoints = new List<RestorePoint>();
-            List<RestorePoint> capacityOptimized = new List<RestorePoint>();
-            List<RestorePoint> dateOptimized = new List<RestorePoint>();
-
-            if (Configuration.Capacity != default(int))
-            {
-                capacityOptimized = OptimizeByCapacity(restorePoints);
-            }
-
-            if (Configuration.Date != default(DateTime))
-            {
-                dateOptimized = OptimizeByTime(restorePoints);
-            }
-
-            if (Configuration.IsHybrid)
-            {
-                if (Configuration.OptimizationType == RestorePointOptimizationType.Soft) optimizedRestorePoints = capacityOptimized.Union(dateOptimized).ToList();
-
-                if (Configuration.OptimizationType == RestorePointOptimizationType.Strict) optimizedRestorePoints = capacityOptimized.Intersect(dateOptimized).ToList();
-            }
-            else
-            {
-                if (capacityOptimized.Any()) optimizedRestorePoints = capacityOptimized;
-                if (dateOptimized.Any()) optimizedRestorePoints = dateOptimized;
-            }
-
-            Console.WriteLine(dateOptimized.Count);
-            if (optimizedRestorePoints.Count == 0) throw new BackupsExtraException("Optimization method deleted all restore points");
-            int intersectionIndex = restorePoints.IndexOf(optimizedRestorePoints[0]);
+            int intersectionIndex = backupJob.RestorePoints.IndexOf(optimizedRestorePoints[0]);
             if (Configuration.MergeEnabled) MergePoints(backupJob, intersectionIndex, optimizedRestorePoints[0]);
 
             backupJob.RepositorySystem.DeleteFolder(backupJob.RepositorySystem.JoinPath(backupJob.PathToSave, $"\\{backupJob.BackupJobNamePatternValue} {backupJob.Name}"));
@@ -65,17 +35,35 @@ namespace BackupsExtra.Services
                     backupJob.Name,
                     restorePoint.DateOfCreation);
             });
+        }
+
+        public List<RestorePoint> OptimizeRestorePoints(BackupJob backupJob)
+        {
+            if (Configuration.Algorithms.Count != 1) throw new BackupsExtraException("Optimization type wasn't provided");
+            List<RestorePoint> optimizedRestorePoints = Configuration.Algorithms[0].Run(backupJob.RestorePoints);
+            if (optimizedRestorePoints.Count == 0) throw new BackupsExtraException("Optimization method deleted all restore points");
+            FileSystemOptimization(backupJob, optimizedRestorePoints);
             return optimizedRestorePoints;
         }
 
-        private List<RestorePoint> OptimizeByCapacity(List<RestorePoint> restorePoints)
+        public List<RestorePoint> OptimizeRestorePoints(BackupJob backupJob, RestorePointOptimizationType optimizationType)
         {
-            return Enumerable.Reverse(restorePoints).Take(Configuration.Capacity).Reverse().ToList();
-        }
+            List<RestorePoint> optimizedRestorePoints = Configuration.Algorithms[0].Run(backupJob.RestorePoints);
+            for (int i = 1; i < Configuration.Algorithms.Count; i++)
+            {
+                if (optimizationType == RestorePointOptimizationType.Soft)
+                {
+                    optimizedRestorePoints = Configuration.Algorithms[i].Run(backupJob.RestorePoints).Union(optimizedRestorePoints).ToList();
+                }
+                else if (optimizationType == RestorePointOptimizationType.Strict)
+                {
+                    optimizedRestorePoints = Configuration.Algorithms[i].Run(backupJob.RestorePoints).Intersect(optimizedRestorePoints).ToList();
+                }
+            }
 
-        private List<RestorePoint> OptimizeByTime(List<RestorePoint> restorePoints)
-        {
-            return restorePoints.FindAll(restorePoint => DateTime.Compare(restorePoint.DateOfCreation, Configuration.Date) >= 0);
+            if (optimizedRestorePoints.Count == 0) throw new BackupsExtraException("Optimization method deleted all restore points");
+            FileSystemOptimization(backupJob, optimizedRestorePoints);
+            return optimizedRestorePoints;
         }
 
         private void MergePoints(BackupJob backupJob, int intersectionIndex, RestorePoint pointToMerge)

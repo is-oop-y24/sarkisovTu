@@ -1,11 +1,11 @@
 ﻿using Backups.Models;
 using Backups.Repository;
 
-namespace BackupsExtra.Services
+namespace BackupsExtra.Models
 {
-    public class BackupRestoreService
+    public class OriginalLocationAlgorithm : IRestoreAlgorithm
     {
-        public void UpBackToOriginalLocation(RestorePoint restorePoint)
+        public void Restore(RestorePoint restorePoint, string path = "")
         {
             IRepository repositorySystem = restorePoint.Storages[0].RepositoryRef;
             restorePoint.Storages.ForEach(storage =>
@@ -20,15 +20,6 @@ namespace BackupsExtra.Services
                     string pathToReplace = storageOriginalPath.Replace($@"\{storage.Name}", string.Empty);
                     repositorySystem.CreateFileInDirectory(pathToReplace, storage.Name, storage.Content);
                 }
-            });
-        }
-
-        public void UpBackToDifferentLocation(RestorePoint restorePoint, string path)
-        {
-            IRepository repositorySystem = restorePoint.Storages[0].RepositoryRef;
-            restorePoint.Storages.ForEach(storage =>
-            {
-                repositorySystem.CreateFileInDirectory(path, storage.Name, storage.Content);
             });
         }
     }

@@ -19,17 +19,15 @@ namespace BackupsExtra.Models
         private List<BackupJob> _backupJobs;
         private IRepository _repositorySystem;
         private BackupOptimizationService _optimizationService;
-        private BackupRestoreService _restoreService;
 
-        public BackupsJobService(IRepository repositorySystem, string configFilePath, OptimizationConfiguration optimizationConfiguration)
+        public BackupsJobService(IRepository repositorySystem, string configFilePath, List<IOptimizationAlgorithm> algorithms, bool mergeEnabled)
         {
             _notificationClients = new List<INotificationClient>();
             _configFilePath = configFilePath;
             _repositorySystem = repositorySystem;
-            _optimizationService = new BackupOptimizationService(optimizationConfiguration);
+            _optimizationService = new BackupOptimizationService(new OptimizationConfiguration(algorithms, mergeEnabled));
             _backupJobs = new List<BackupJob>();
             _backupJobs.AddRange(ConvertSchemaToModels(LoadState()));
-            _restoreService = new BackupRestoreService();
         }
 
         public IRepository RepositorySystem { get { return _repositorySystem;  } }
@@ -108,18 +106,9 @@ namespace BackupsExtra.Models
             }).ToList();
         }
 
-        public void UpBackRestorePoint(RestorePoint restorePoint, RestorePointUpBackType upBackType, string path = "")
+        public void UpBackRestorePoint(RestorePoint restorePoint, IRestoreAlgorithm algorithm, string path = "")
         {
-            switch (upBackType)
-            {
-                case RestorePointUpBackType.OriginalLocation:
-                    _restoreService.UpBackToOriginalLocation(restorePoint);
-                    break;
-                case RestorePointUpBackType.DifferentLocation:
-                    _restoreService.UpBackToDifferentLocation(restorePoint, path);
-                    break;
-            }
-
+            algorithm.Restore(restorePoint, path);
             NotifyClients(new NotificationMessage(this, DateTime.Now, $"Restore point storages was restored"));
         }
 

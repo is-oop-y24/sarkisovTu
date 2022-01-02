@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Backups.Models;
 using Backups.Repository;
 using BackupsExtra.Models;
@@ -31,7 +32,7 @@ namespace BackupsExtra.Tests
         [Test]
         public void LoadStateFromJsonFile_StateWasLoaded()
         {
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(3, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new CapacityOptimization(3) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             Assert.AreEqual(loadedBackupJob.Name, "test job");
             Assert.AreEqual(loadedBackupJob.PathToSave, @"root\output");
@@ -42,7 +43,7 @@ namespace BackupsExtra.Tests
         public void LimitRestorePointsWithCapacity_ExtraPointWereDeleted()
         {
             int capacityLimit = 2;
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(capacityLimit, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new CapacityOptimization(capacityLimit) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             int restorePointsCountBeforeOptimization = loadedBackupJob.RestorePoints.Count;
             backupsJobService.CreateRestorePoint(loadedBackupJob);
@@ -55,7 +56,7 @@ namespace BackupsExtra.Tests
         public void LimitRestorePointsWithFutureDateTime_AllPointsWereDeletedThrowException()
         {
             DateTime timeLimit = DateTime.Now.AddDays(10000);
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(timeLimit, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new TimeOptimization(timeLimit) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             Assert.Catch<BackupsExtraException>(() =>
             {
@@ -66,10 +67,10 @@ namespace BackupsExtra.Tests
         [Test]
         public void UpBackRestorePointToOriginalLocation_FilesWereRestored()
         {
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(3, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new CapacityOptimization(3) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             RestorePoint restorePoint = loadedBackupJob.RestorePoints[0];
-            backupsJobService.UpBackRestorePoint(restorePoint, RestorePointUpBackType.OriginalLocation);
+            backupsJobService.UpBackRestorePoint(restorePoint, new OriginalLocationAlgorithm());
             restorePoint.Storages.ForEach(strorage =>
             {
                 Assert.AreEqual(strorage.Content, _inMemoryRepository.ReadFile(strorage.Path));
@@ -80,10 +81,10 @@ namespace BackupsExtra.Tests
         public void UpBackRestorePointToDifferentLocationFilesWereRestored()
         {
             string directoryToRestore = @"root\upback";
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(3, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new CapacityOptimization(3) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             RestorePoint restorePoint = loadedBackupJob.RestorePoints[0];
-            backupsJobService.UpBackRestorePoint(restorePoint, RestorePointUpBackType.DifferentLocation, directoryToRestore);
+            backupsJobService.UpBackRestorePoint(restorePoint, new DifferentLocationAlgorithm(), directoryToRestore);
             restorePoint.Storages.ForEach(strorage =>
             {
                 Assert.AreEqual(strorage.Content, _inMemoryRepository.ReadFile(_inMemoryRepository.JoinPath(directoryToRestore, strorage.Name)));
@@ -94,7 +95,7 @@ namespace BackupsExtra.Tests
         public void SendFileNotificationOnCreatingRestorePoint_NotificationWasSent()
         {
             string notificationFilePath = @"root\logs.txt";
-            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new OptimizationConfiguration(3, true));
+            var backupsJobService = new BackupsJobService(_inMemoryRepository, @"root\files\config.json", new List<IOptimizationAlgorithm>() { new CapacityOptimization(3) }, true);
             BackupJob loadedBackupJob = backupsJobService.GetBackupJobByName("test job");
             INotificationClient fsNotificationClient = new FsNotificationClient(notificationFilePath);
             backupsJobService.AttachNotificationClient(fsNotificationClient);
