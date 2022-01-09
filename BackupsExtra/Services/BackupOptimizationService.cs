@@ -37,17 +37,9 @@ namespace BackupsExtra.Services
             });
         }
 
-        public List<RestorePoint> OptimizeRestorePoints(BackupJob backupJob)
-        {
-            if (Configuration.Algorithms.Count != 1) throw new BackupsExtraException("Optimization type wasn't provided");
-            List<RestorePoint> optimizedRestorePoints = Configuration.Algorithms[0].Run(backupJob.RestorePoints);
-            if (optimizedRestorePoints.Count == 0) throw new BackupsExtraException("Optimization method deleted all restore points");
-            FileSystemOptimization(backupJob, optimizedRestorePoints);
-            return optimizedRestorePoints;
-        }
-
         public List<RestorePoint> OptimizeRestorePoints(BackupJob backupJob, RestorePointOptimizationType optimizationType)
         {
+            if (Configuration.Algorithms.Count < 1) throw new BackupsExtraException("Optimization type wasn't provided");
             List<RestorePoint> optimizedRestorePoints = Configuration.Algorithms[0].Run(backupJob.RestorePoints);
             for (int i = 1; i < Configuration.Algorithms.Count; i++)
             {

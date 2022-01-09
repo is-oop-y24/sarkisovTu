@@ -19,13 +19,15 @@ namespace BackupsExtra.Models
         private List<BackupJob> _backupJobs;
         private IRepository _repositorySystem;
         private BackupOptimizationService _optimizationService;
+        private RestorePointOptimizationType _optimizationType;
 
-        public BackupsJobService(IRepository repositorySystem, string configFilePath, List<IOptimizationAlgorithm> algorithms, bool mergeEnabled)
+        public BackupsJobService(IRepository repositorySystem, string configFilePath, List<IOptimizationAlgorithm> algorithms, bool mergeEnabled, RestorePointOptimizationType optimizationType)
         {
             _notificationClients = new List<INotificationClient>();
             _configFilePath = configFilePath;
             _repositorySystem = repositorySystem;
             _optimizationService = new BackupOptimizationService(new OptimizationConfiguration(algorithms, mergeEnabled));
+            _optimizationType = optimizationType;
             _backupJobs = new List<BackupJob>();
             _backupJobs.AddRange(ConvertSchemaToModels(LoadState()));
         }
@@ -49,7 +51,7 @@ namespace BackupsExtra.Models
         public void CreateRestorePoint(BackupJob backupJob, DateTime date = default(DateTime))
         {
             backupJob.CreateRestorePoint(date);
-            backupJob.ReloadRestorePoints(_optimizationService.OptimizeRestorePoints(backupJob));
+            backupJob.ReloadRestorePoints(_optimizationService.OptimizeRestorePoints(backupJob, _optimizationType));
             NotifyClients(new NotificationMessage(this, DateTime.Now, $"{backupJob.Name} created new restore point"));
         }
 
