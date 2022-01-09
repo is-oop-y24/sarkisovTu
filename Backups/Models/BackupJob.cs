@@ -5,45 +5,55 @@ using Backups.Repository;
 
 namespace Backups.Models
 {
-    public class BackupJob<T>
-        where T : IRepository
+    public class BackupJob
     {
         private const string BackupJobNamePattern = "Backup-job";
         private const string BackupDatePattern = "yyyy-MM-dd - H mm ss ffff";
         private const string RestorePointNamePattern = "Restore-point";
-
-        private string _name;
-        private T _repositorySystem;
-        private string _pathToSave;
-        private IBackupAlgorithm _backupAlgorithm;
-        private List<JobObject> _jobObjects;
-        private List<RestorePoint> _restorePoints;
-
-        public BackupJob(string name, T repositorySystem, IBackupAlgorithm backupAlgorithm, string pathToSave)
+        public BackupJob(string name, IRepository repositorySystem, IBackupAlgorithm backupAlgorithm, string pathToSave)
         {
-            _name = name;
-            _repositorySystem = repositorySystem;
-            _pathToSave = pathToSave;
-            _backupAlgorithm = backupAlgorithm;
-            _jobObjects = new List<JobObject>();
-            _restorePoints = new List<RestorePoint>();
+            Name = name;
+            RepositorySystem = repositorySystem;
+            PathToSave = pathToSave;
+            BackupAlgorithm = backupAlgorithm;
+            JobObjects = new List<JobObject>();
+            RestorePoints = new List<RestorePoint>();
         }
 
-        public List<RestorePoint> RestorePoints
-        {
-            get { return _restorePoints; }
-        }
+        public string Name { get; private set; }
+        public IRepository RepositorySystem { get; private set; }
+        public string PathToSave { get; private set; }
+        public IBackupAlgorithm BackupAlgorithm { get; private set; }
+        public List<JobObject> JobObjects { get; private set; }
+        public List<RestorePoint> RestorePoints { get; private set; }
+        public string BackupJobNamePatternValue { get { return BackupJobNamePattern; } }
+        public string BackupDatePatternValue { get { return BackupDatePattern; } }
+        public string RestorePointNamePatternValue { get { return RestorePointNamePattern; } }
 
-        public JobObject AddJobObject(string pathToFile)
+        public void ValidateJobObjectPath(string pathToFile)
         {
             if (FindJobByPath(pathToFile) != null)
             {
                 throw new Exception("Job with this file have been already added");
             }
+        }
 
-            JobObject newJobObject = new JobObject(_repositorySystem, pathToFile);
-            _jobObjects.Add(newJobObject);
+        public JobObject AddJobObject(string pathToFile)
+        {
+            ValidateJobObjectPath(pathToFile);
+            JobObject newJobObject = new JobObject(RepositorySystem, pathToFile);
+            JobObjects.Add(newJobObject);
             return newJobObject;
+        }
+
+        public void AddJobObjects(List<string> jobObjectsPath)
+        {
+            List<JobObject> jobObjects = jobObjectsPath.Select(jobObjectPath =>
+            {
+                ValidateJobObjectPath(jobObjectPath);
+                return new JobObject(RepositorySystem, jobObjectPath);
+            }).ToList();
+            JobObjects.AddRange(jobObjects);
         }
 
         public void RemoveJobObject(string pathToFile)
@@ -51,33 +61,39 @@ namespace Backups.Models
             JobObject queryJob = FindJobByPath(pathToFile);
             if (queryJob != null)
             {
-                _jobObjects.Remove(queryJob);
+                JobObjects.Remove(queryJob);
             }
         }
 
         public void RemoveJobObject(JobObject jobObject)
         {
-            _jobObjects.Remove(jobObject);
+            JobObjects.Remove(jobObject);
         }
 
         public JobObject FindJobByPath(string path)
         {
-            return _jobObjects.Find(job => job.Path == path);
+            return JobObjects.Find(job => job.Path == path);
         }
 
-        public RestorePoint CreateRestorePoint()
+        public RestorePoint CreateRestorePoint(DateTime date = default(DateTime))
         {
-            RestorePoint newRestorePoint = _backupAlgorithm.CreateRestorePoint(_jobObjects, _repositorySystem, BackupJobNamePattern, BackupDatePattern, RestorePointNamePattern, _pathToSave, _name);
-            _restorePoints.Add(newRestorePoint);
+            RestorePoint newRestorePoint = BackupAlgorithm.CreateRestorePoint(JobObjects, RepositorySystem, BackupJobNamePattern, BackupDatePattern, RestorePointNamePattern, PathToSave, Name, date);
+            RestorePoints.Add(newRestorePoint);
             return newRestorePoint;
         }
 
         public string GetPathOfRestorePoint(RestorePoint restorePoint)
         {
-            string backupDirectory = _repositorySystem.JoinPath(_pathToSave, $"\\{BackupJobNamePattern} {_name}");
+            string backupDirectory = RepositorySystem.JoinPath(PathToSave, $"\\{BackupJobNamePattern} {Name}");
             string restorePointCreationDate = restorePoint.DateOfCreation.ToString(BackupDatePattern);
-            string restorePointDirectory = _repositorySystem.JoinPath(backupDirectory, $"\\{RestorePointNamePattern} {restorePointCreationDate}");
+            string restorePointDirectory = RepositorySystem.JoinPath(backupDirectory, $"\\{RestorePointNamePattern} {restorePointCreationDate}");
             return restorePointDirectory;
+        }
+
+        public void ReloadRestorePoints(List<RestorePoint> restorePoints)
+        {
+            RestorePoints.Clear();
+            RestorePoints.AddRange(restorePoints);
         }
     }
 }

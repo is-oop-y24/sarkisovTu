@@ -66,5 +66,11 @@ namespace Backups.Models
             if (!Files.ContainsKey(name)) throw new BackupsException("Unable to find specified file");
             Files.Remove(name);
         }
+
+        public void DeleteFolder(string name)
+        {
+            EmulatedFolder queryFolder = ChildFolders.Find(folder => folder.FolderName == name);
+            ChildFolders.Remove(queryFolder);
+        }
     }
 }
